@@ -1,7 +1,7 @@
 from tkinter import * # import GUI module
 
 class Pong(Tk):
-    global p1Up,p2Up,p1Down,p2Down
+    global p1Up,p2Up,p1Down,p2Down,MoveProjectile,ProjectileCollisionCheck,CheckFlags
     
     def __init__(self,parent):
         Tk.__init__(self,parent)
@@ -13,6 +13,7 @@ class Pong(Tk):
     def initialize(self): # main loop
         global player1,player1_ypos,player2,player2_ypos,projectile_properties,projectile,res
         global p1Flags,p2Flags
+        global ProjectileCollisionCheck,MoveProjectile,CheckFlags
         global canvas
             
         res = [800,600] # screen resolution, width x height
@@ -47,8 +48,9 @@ class Pong(Tk):
             "size": 20,
             "xpos": res[0]/2-10,
             "ypos": res[1]/2-10,
-            "xvelocity": 5,
-            "yvelocity": 5
+            "xvelocity": 2,#31 = max
+            "yvelocity": 0,
+            "lastPlayerCollision": None
             }
 
         projectile = canvas.create_rectangle(projectile_properties["xpos"],projectile_properties["ypos"],
@@ -56,7 +58,43 @@ class Pong(Tk):
                                              projectile_properties["ypos"]+projectile_properties["size"],
                                              fill="white")
 
+        ProjectileCollisionCheck()
+        MoveProjectile()
+        CheckFlags()
 
+    def ProjectileCollisionCheck():
+        global projectile, projectile_properties,player1_ypos,player2_ypos
+        #collisions with top/bottom borders
+        if (projectile_properties["ypos"] <= 15 + projectile_properties["size"] - 5 or
+            projectile_properties["ypos"] >= res[1]-15 - projectile_properties["size"] - 15):
+            projectile_properties["yvelocity"] *= -1
+
+        #collisions with players 1 and 2 respectively
+        if (projectile_properties["xpos"] + 20 >= res[0]*0.1+10 and projectile_properties["xpos"] -10<= res[0]*0.1+10 and
+            projectile_properties["ypos"] >= player1_ypos - 50 and projectile_properties["ypos"] <= player1_ypos + 50 and
+            projectile_properties["lastPlayerCollision"]!= 1):
+            projectile_properties["xvelocity"] *= -1
+            projectile_properties["lastPlayerCollision"] = 1
+            
+        if (projectile_properties["xpos"] + 30 >= res[0]*0.9-10 and projectile_properties["xpos"] +10 <= res[0]*0.9-10 and
+            projectile_properties["ypos"] >= player2_ypos - 50 and projectile_properties["ypos"] <= player2_ypos + 50 and
+            projectile_properties["lastPlayerCollision"] != 2):
+            projectile_properties["xvelocity"] *= -1
+            projectile_properties["lastPlayerCollision"] = 2
+            
+        canvas.after(int(1000/60),ProjectileCollisionCheck) #check approx. 60 times/sec
+
+        
+    def MoveProjectile():
+        global projectile, projectile_properties
+        projectile_properties["xpos"] += projectile_properties["xvelocity"]
+        projectile_properties["ypos"] += projectile_properties["yvelocity"]
+
+        canvas.coords(projectile,(projectile_properties["xpos"],projectile_properties["ypos"],
+                                  projectile_properties["xpos"]+projectile_properties["size"],
+                                  projectile_properties["ypos"]+projectile_properties["size"]))
+
+        canvas.after(int(1000/60),MoveProjectile) #approx. 60fps
 
     def p1UpFlagSet(self, event):
         global p1Flags
@@ -114,7 +152,7 @@ class Pong(Tk):
             player2_ypos += 10
             canvas.coords(player2,(res[0]*0.9-10,player2_ypos-40,res[0]*0.9-10,player2_ypos+40))
 
-    def CheckFlags(event): #update movement
+    def CheckFlags(): #update movement
         global p1Flags,p2Flags
         if p1Flags[0]:
             p1Up()
@@ -126,10 +164,9 @@ class Pong(Tk):
         elif p2Flags[1]:
             p2Down()
 
-        app.after(20,app.CheckFlags)
+        canvas.after(int(1000/60),CheckFlags)
 
 if __name__ == "__main__":
-    global p1Up, p2Up, p1Down, p2Down
 
     app = Pong(None)
     app.bind("<w>",app.p1UpFlagSet)
@@ -142,7 +179,6 @@ if __name__ == "__main__":
     app.bind("<Down>",app.p2DownFlagSet)
     app.bind("<KeyRelease-Down>",app.p2DownFlagRemove)
 
-    app.after(20,app.CheckFlags) #updates movement every 0.02s (20ms)
     
     app.title('Pong')
     app.mainloop()
