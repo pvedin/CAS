@@ -1,11 +1,3 @@
-/*
-	TODO:
-	- Define onclick functions for miscButtons and memoryButtons
-	- Make sure outputWindow works as intended (e.g no numbers outside the calculator at any time)
-*/
-
-
-
 window.onload = function(){
 	// get element with id "calculator" from html file and define container
 	var container = document.getElementById("calculator");
@@ -23,9 +15,11 @@ window.onload = function(){
 	pow = Math.pow;
 	
 	// define variables that need to be defined before a button is pressed
-	allowNumInput = 1;
-	operatorPressed = 0;
+	allowNumInput = 1; // True          // do not allow more num inputs until an operator has been pressed if x^2,x^y or sqrt has been pressed
+	operatorPressed = 0; // False       // used to prevent multiple operators after each other, e.g 4+/*-5
+	newNumber = 1; // True
 	memory = 0;
+	
 	
 	// output will be shown in this variable
 	var outputWindow = document.createElement("div");
@@ -36,8 +30,6 @@ window.onload = function(){
 	outputWindow.style.border = "2px solid black";
 	outputWindow.style.position = "relative";
 	
-	
-	
 	// displays current calculation in upper right corner (e.g the Windows calculator)
 	outputCalculation = document.createElement("p");
 	outputCalculation.style.fontSize = "10px";
@@ -47,13 +39,14 @@ window.onload = function(){
 	outputCalculation.style.right = "0";
 	outputCalculation.style.position = "absolute";
 	outputCalculation.innerHTML = "";
-	outputCalculation.scale = 1;
+	outputCalculation.fontSize = 80; // custom property
+	outputCalculation.defaultFontSize = outputCalculation.fontSize; // custom property; used to restore fontSize to its initial value
+	outputCalculation.style.fontSize = outputCalculation.fontSize.toString() + "%";
 	
 	// displays numbers that are input as well as the result of the calculation 
 	// after the equals button is pushed
 	outputText = document.createElement("p");
 	outputText.style.verticalAlign = "middle";
-	outputText.style.fontSize = "25px";
 	outputText.style.textAlign = "right";
 	outputText.style.fontWeight = "bold";
 	outputText.style.fontFamily = "default";
@@ -62,7 +55,10 @@ window.onload = function(){
 	outputText.style.right = "0";
 	outputText.style.position = "absolute";
 	outputText.innerHTML += "0";
-	outputText.scale = 1;
+	outputText.fontSize = 160; // custom property
+	outputText.defaultFontSize = outputText.fontSize; // custom property; used to restore fontSize to its initial value
+	outputText.style.fontSize = outputText.fontSize.toString() + "%";
+	outputText.style.paddingLeft = "20px";
 	
 	// add to the outputWindow container
 	outputWindow.appendChild(outputCalculation);
@@ -86,7 +82,6 @@ window.onload = function(){
 				OnDigitClicks(i);						  //(otherwise, the function would
 			}											  //immediately on page load and would
 		})(i);											  //not respond to button clicks
-	
 	}
 		
 	// define operators
@@ -134,7 +129,6 @@ window.onload = function(){
 	miscButtons["powY"] = document.createElement("button");
 	miscButtons["equals"] = document.createElement("button");
 	
-	
 	i = 0 // assign sign to button in the loop below
 	for (var key in miscButtons){
 		miscButtons[key].style.width = "50px";
@@ -148,10 +142,6 @@ window.onload = function(){
 		})(key);
 		i++;
 	}
-	
-
-	
-
 	
 	// define MS, MC, MR, M+ and M- 
 	var memoryButtons = {};
@@ -179,9 +169,6 @@ window.onload = function(){
 		})(key);
 		i += 1;
 	}
-	
-	
-	
 						
 	// push the elements in order (outputWindow, memory buttons, digits 9-7, div operator, etc)
 	var elements = [outputWindow,
@@ -192,13 +179,9 @@ window.onload = function(){
 		digitButtons["1"],digitButtons["2"],digitButtons["3"],operators["minus"],miscButtons["powY"],
 		digitButtons["0"],miscButtons["decimalPoint"],operators["plus"],miscButtons["equals"]];
 	
-	
 	// add functionality to buttons in digitButtons
 	/*
 		Rules for digits (some may not apply for 0):
-		- A number will not be appended if there are more than 10 characters in outputWindow
-		  (this is to allow space for "-",".","pow(x,y)","e+xyz" and sqrt() as outputWindow can not contain more
-		  than 18 characters without "overflowing", i.e. numbers are displayed outside the area given to outputText
 		- If 0 is the only number in outputText, it will be replaced by buttonNumber
 		- If an operator was pressed previously (e.g +), outputText will be cleared and buttonNumber will be appended
 	*/
@@ -206,38 +189,43 @@ window.onload = function(){
 		if (buttonNumber == 0 && outputText.innerHTML.length == 1 && outputText.innerHTML == "0"); // do nothing
 		else if ((outputText.innerHTML.length !== 1 || 
 				(outputText.innerHTML.length == 1 && outputText.innerHTML !== "0")) &&
-				outputText.innerHTML.length <= 10 && allowNumInput == 1) {
-				outputText.innerHTML += buttonNumber.toString();
+				allowNumInput == 1) {
+					
+				if (newNumber == 1){
+					outputText.innerHTML = buttonNumber.toString();
+					newNumber = 0;
+				}
+				else {
+					outputText.innerHTML += buttonNumber.toString();
+				}
+				operatorPressed = 0;
 		}
-		else if (outputText.innerHTML.length > 10); //do nothing; prevent else clause from running
 		else {
 			outputText.innerHTML = buttonNumber.toString();
 			operatorPressed = 0;
 		}
+		
+		ScaleText(outputText);
 	}
 	
+	// add functionality to buttons in operators
 	function OnOperatorClicks(sign){
+		allowNumInput = 1;
+		newNumber = 1;
 		if (outputText.innerHTML !== "" && sign !== "minus" && operatorPressed == 0){
 			operatorPressed = 1;
-			allowNumInput = 1;
 			outputCalculation.innerHTML += outputText.innerHTML + operators[sign].innerHTML;
-			outputText.innerHTML = "0";
 		}
 		else if (sign == "minus" && operatorPressed == 0){
 			if (outputText.innerHTML == ""){
 				operatorPressed = 1;
-				allowNumInput = 1;
 				outputCalculation.innerHTML = "0" + operators[sign].innerHTML;
-				outputText.innerHTML = "0";
 			}
 			else{
-				operatorPressed = 1;
-				allowNumInput = 1;
 				outputCalculation.innerHTML += outputText.innerHTML + operators[sign].innerHTML;
-				outputText.innerHTML = "0";
 			}
 		}
-		
+		ScaleText(outputCalculation);
 		
 		
 	}
@@ -245,9 +233,14 @@ window.onload = function(){
 	function OnClearClick(){
 		outputText.innerHTML = "0";
 		outputCalculation.innerHTML = "";
+		allowNumInput = 1;
+		ScaleText(outputText);
+		ScaleText(outputCalculation);
 	}
 	function OnClearEntryClick(){
 		outputText.innerHTML = "0";
+		allowNumInput = 1;
+		ScaleText(outputText);
 	}
 	function OnBackspaceClick(){
 		if (outputText.innerHTML !== "0"){
@@ -264,6 +257,7 @@ window.onload = function(){
 		else{
 			outputText.innerHTML = outputText.innerHTML.substr(1); //remove first character
 		}
+		
 	}
 	function OnPercentageClick(){
 		outputCalculation.innerHTML += (eval(outputCalculation.innerHTML.slice(0,-1)) *(parseFloat(outputText.innerHTML) / 1000)*10); 
@@ -273,45 +267,55 @@ window.onload = function(){
 		if (!outputText.innerHTML.includes(".")){
 			outputText.innerHTML += ".";
 		}
+		ScaleText(outputText);
 	}
 	function OnSqrtClick(){
 		allowNumInput = 0;
 		outputText.innerHTML = "sqrt(" + outputText.innerHTML + ")";
+		ScaleText(outputText);
 	}
 	function OnPow2Click(){
 		allowNumInput = 0;
 		outputText.innerHTML = "pow(" + outputText.innerHTML + ",2)";
+		ScaleText(outputText);
 	}
 	function OnPowYClick(){
 		allowNumInput = 0;
 		power = prompt("Enter value for y (x^y):");
 		outputText.innerHTML = "pow(" + outputText.innerHTML + "," + power + ")";
+		ScaleText(outputText);
 	}
 	function OnEqualsClick(){
 		allowNumInput = 1;
-		if (outputText.innerHTML !== "0"){
+		newNumber = 1;
+		if (outputCalculation.innerHTML.slice(-1) == "+" || // if last character is an operator
+			outputCalculation.innerHTML.slice(-1) == "-" ||
+			outputCalculation.innerHTML.slice(-1) == "*" ||
+			outputCalculation.innerHTML.slice(-1) == "/"){
+			
 			outputCalculation.innerHTML += outputText.innerHTML;
 		}
-		result = eval(outputCalculation.innerHTML);
-		if ((result.toString()).length <= 10){
+		if (outputCalculation.innerHTML == ""){
+			outputCalculation.innerHTML += outputText.innerHTML;
+		}
+		
+		result = eval(outputCalculation.innerHTML); // calculate result
+		if ((result.toString()).length <= 20){
 			outputText.innerHTML = (result.toPrecision(result.length));
 		}
 		else{
-			outputText.innerHTML = (result.toPrecision(10));
+			outputText.innerHTML = (result.toPrecision(20)); // round to 20 significant figures
 		}
 		outputCalculation.innerHTML = "";
+		ScaleText(outputText);
 	}
 	
 	function OnMClearClick(){
 		memory = 0;
 	}
 	function OnMRecallClick(){
-		if (outputText.innerHTML == "0"){
-			outputText.innerHTML = memory.toString();
-		}
-		else{
-			outputText.innerHTML += memory.toString();
-		}
+		newNumber = 1;
+		outputText.innerHTML = memory.toString();
 	}
 	function OnMStoreClick(){
 		memory = parseFloat(outputText.innerHTML);
@@ -321,18 +325,20 @@ window.onload = function(){
 	}
 	function OnMMinusClick(){
 		memory -= parseFloat(outputText.innerHTML);
+		ScaleText(outputText); //testing purposes
 	}
 	
 	
-	//make sure text always fits into element (not implemented yet)
-	function ScaleText(element,upOrDown){
-		if (upOrDown == "up"){
-			element.scale += 0.1;
-			element.style.transform = "scale("+element.scale+",1)";
+	
+	//make sure text always fits into outputWindow (not implemented yet)
+	function ScaleText(element){
+		while(element.offsetWidth > outputWindow.clientWidth){ // scale down
+			element.fontSize -= 1;
+			element.style.fontSize = element.fontSize.toString() + "%";
 		}
-		else if(upOrDown == "down"){
-			element.scale -= 0.1;
-			element.style.transform = "scale("+element.scale+",1)";
+		while(element.offsetWidth < outputWindow.clientWidth && element.fontSize < element.defaultFontSize){ //scale up
+			element.fontSize += 1;
+			element.style.fontSize = element.fontSize.toString() + "%";
 		}
 	}
 
