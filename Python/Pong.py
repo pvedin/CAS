@@ -1,9 +1,18 @@
 from tkinter import * # import GUI module
+from random import randint #import randint function
+
+##
+## TODO:
+## - Fix positioning hiccup when reseting projectile
+## - Update scores when reseting projectile
+## - Add screen showing who won when a player gets 10 points
+##
 
 class Pong(Tk):
-    global p1Up,p2Up,p1Down,p2Down,MoveProjectile,ProjectileCollisionCheck,CheckFlags
+    global p1Up,p2Up,p1Down,p2Down,MoveProjectile,ProjectileCollisionCheck,CheckFlags,StartRound,InitRound
     
     def __init__(self,parent):
+
         Tk.__init__(self,parent)
 
         self.parent = parent
@@ -13,15 +22,18 @@ class Pong(Tk):
     def initialize(self): # main loop
         global player1,player1_ypos,player2,player2_ypos,projectile_properties,projectile,res
         global p1Flags,p2Flags
-        global ProjectileCollisionCheck,MoveProjectile,CheckFlags
+        global ProjectileCollisionCheck,MoveProjectile,CheckFlags,StartRound,new_round,new_game,round_start
         global canvas
             
         res = [800,600] # screen resolution, width x height
+        new_game = True # used on program startup 
+        new_round = False
+        round_start = False
         canvas =  Canvas(width=res[0], height=res[1])
         canvas.pack()
 
-        self.resizable(False,False)
-        self.geometry("800x600")
+        self.resizable(False,False) #resizing the window is not allowed
+        self.geometry(str(res[0]) + "x" + str(res[1])) # sets resolution
 
         background = canvas.create_rectangle(0,0,res[0],res[1],fill="black")
         
@@ -41,15 +53,15 @@ class Pong(Tk):
         p1Flags = [False,False]
         p2Flags = [False,False]
 
-        player1_score_label = canvas.create_text(340,60, fill="white", text="10", font="Courier 50 bold")
-        player2_score_label = canvas.create_text(460,60, fill="white", text="10", font="Courier 50 bold")
+        player1_score_label = canvas.create_text(340,60, fill="white", text="0", font="Courier 50 bold")
+        player2_score_label = canvas.create_text(460,60, fill="white", text="0", font="Courier 50 bold")
 
         projectile_properties = {
             "size": 20,
             "xpos": res[0]/2-10,
             "ypos": res[1]/2-10,
-            "xvelocity": 2,#31 = max
-            "yvelocity": 0,
+            "xvelocity": 5,#31 = max
+            "yvelocity": 7,
             "lastPlayerCollision": None
             }
 
@@ -58,31 +70,90 @@ class Pong(Tk):
                                              projectile_properties["ypos"]+projectile_properties["size"],
                                              fill="white")
 
-        ProjectileCollisionCheck()
-        MoveProjectile()
-        CheckFlags()
+        StartRound()
+
+
+    def StartRound():
+        global new_round, new_game, round_start,projectile_properties
+        if new_round:
+                new_round = False
+                canvas.after(int(2000),InitRound) #projectile starts moving after 2s
+        if new_game: #only runs once
+                new_game = False
+                new_round = True
+        if round_start:
+            ProjectileCollisionCheck()
+            MoveProjectile()
+            CheckFlags()
+
+        canvas.after(int(1000/60),StartRound)
+
+
+    def InitRound():
+        global round_start
+        round_start = True
+        pass
 
     def ProjectileCollisionCheck():
-        global projectile, projectile_properties,player1_ypos,player2_ypos
+        global projectile, projectile_properties,player1_ypos,player2_ypos,new_round, round_start
         #collisions with top/bottom borders
         if (projectile_properties["ypos"] <= 15 + projectile_properties["size"] - 5 or
             projectile_properties["ypos"] >= res[1]-15 - projectile_properties["size"] - 15):
             projectile_properties["yvelocity"] *= -1
 
-        #collisions with players 1 and 2 respectively
+        #collisions with players 1 and 2 respectively , will generate new and random x and y velocities
         if (projectile_properties["xpos"] + 20 >= res[0]*0.1+10 and projectile_properties["xpos"] -10<= res[0]*0.1+10 and
             projectile_properties["ypos"] >= player1_ypos - 50 and projectile_properties["ypos"] <= player1_ypos + 50 and
             projectile_properties["lastPlayerCollision"]!= 1):
-            projectile_properties["xvelocity"] *= -1
+            projectile_properties["xvelocity"] = randint(60,80)/10 #positive = right
+            if projectile_properties["yvelocity"] > 0:
+                projectile_properties["yvelocity"] = randint(50,80)/10
+            else:
+                projectile_properties["yvelocity"] = randint(-80,-50)/10
             projectile_properties["lastPlayerCollision"] = 1
             
         if (projectile_properties["xpos"] + 30 >= res[0]*0.9-10 and projectile_properties["xpos"] +10 <= res[0]*0.9-10 and
             projectile_properties["ypos"] >= player2_ypos - 50 and projectile_properties["ypos"] <= player2_ypos + 50 and
             projectile_properties["lastPlayerCollision"] != 2):
-            projectile_properties["xvelocity"] *= -1
+            projectile_properties["xvelocity"] = randint(-80,-60)/10 #negative = left
+            projectile_properties["yvelocity"] = randint(30,100)/10
+            if randint(1,2) == 2: # change direction of yvelocity
+                projectile_properties["yvelocity"] *= -1
+                
             projectile_properties["lastPlayerCollision"] = 2
-            
-        canvas.after(int(1000/60),ProjectileCollisionCheck) #check approx. 60 times/sec
+
+
+        if projectile_properties["xpos"] < 0: # player 2 scores
+            #update scores
+            # .....
+
+            projectile_properties = {  #reset projectile properties
+                    "size": 20,
+                    "xpos": res[0]/2-10,
+                    "ypos": res[1]/2-10,
+                    "xvelocity": 5,#31 = max (will go through players if above 31)
+                    "yvelocity": 7, #no apparent limit
+                    "lastPlayerCollision": None
+                    }
+
+            round_start= False
+            new_round = True
+
+        if projectile_properties["xpos"] > res[0]: # player 1 scores
+            #update scores
+            # .....
+
+            projectile_properties = {  #reset projectile properties
+                    "size": 20,
+                    "xpos": res[0]/2-10,
+                    "ypos": res[1]/2-10,
+                    "xvelocity": 5,#31 = max (will go through players if above 31)
+                    "yvelocity": 7, #no apparent limit
+                    "lastPlayerCollision": None
+                    }
+
+            round_start= False
+            new_round = True
 
         
     def MoveProjectile():
@@ -93,8 +164,7 @@ class Pong(Tk):
         canvas.coords(projectile,(projectile_properties["xpos"],projectile_properties["ypos"],
                                   projectile_properties["xpos"]+projectile_properties["size"],
                                   projectile_properties["ypos"]+projectile_properties["size"]))
-
-        canvas.after(int(1000/60),MoveProjectile) #approx. 60fps
+        
 
     def p1UpFlagSet(self, event):
         global p1Flags
@@ -164,8 +234,6 @@ class Pong(Tk):
         elif p2Flags[1]:
             p2Down()
 
-        canvas.after(int(1000/60),CheckFlags)
-
 if __name__ == "__main__":
 
     app = Pong(None)
@@ -182,3 +250,4 @@ if __name__ == "__main__":
     
     app.title('Pong')
     app.mainloop()
+
