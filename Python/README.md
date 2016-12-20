@@ -9,7 +9,7 @@ and pressing F5 once it has been opened.
 
 Pong controls:
 
-Player 1 (left):  w + a (note that W and A do not work yet, i.e. do not have caps lock on)
+Player 1 (left):  W + A
 
 Player 2 (right): Arrow keys (up + down)
  
