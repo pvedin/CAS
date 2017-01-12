@@ -1,15 +1,132 @@
-## TODO:
-## - Add ability to keep letter-casing and format (e.g h eLl O -> f fNv D)
-## - Add ability to randomise letter-casing (e.g hello -> HeLLO)
-## - Add ability to format encrypted letters (e.g VDCSASLKBXWKIP - > VDCSA SLKBX WKIP)
-##
+from random import randint # for randomising letter casing
+
+def VerifyOption(prompt,example=""):
+    option = (input(prompt + " (Y/N) " + example + "\n>>> ").upper()).replace(" ","")
+    while option != "Y" and option != "N":
+        option = (input("Invalid input. " + prompt + " (Y/N) " + example + "\n>>> ").upper()).replace(" ","")
+
+    return option
+
+def RememberLetterCasingAndFormat(msg,mode="prompt", msg_info=[]): # modes: 'prompt', 'apply'; default='prompt'
+    if mode.upper() == "PROMPT":
+        option = VerifyOption("Remember letter-casing and format?")
+
+        if option == "N":
+            return None # stop rest of function from running
+        else:
+            pass # continue function
+
+        msg_info = [] # reset msg_info
+        for char in msg:
+            if char.upper() not in alphabet and char != " ":
+                continue #skip
+            
+            if char == " ": # if space:
+                msg_info.append("SPACE")
+            elif char.upper() == char: # if upper case
+                msg_info.append("UPPER")
+            else:  # if lower case
+                msg_info.append("LOWER")
+
+        return msg_info
+
+    elif mode.upper() == "APPLY":
+        for info in msg_info:
+            if info == "SPACE": #increase msg length to avoid IndexError
+                msg += " "
+
+
+        msg_string = ""
+        index = 0
+        for info in msg_info:
+            if info == "UPPER":
+                msg_string += msg[index].upper()
+                index += 1
+            elif info == "LOWER":
+                msg_string += msg[index].lower()
+                index += 1
+            else: # info == "SPACE"
+                msg_string += " "
+
+        return msg_string
+
+    else:
+        raise Exception("Invalid mode. Mode not 'prompt' or 'apply'")
+def StringListConverter(msg,convert_to):
+    try:
+        if convert_to.upper() == "STR" or convert_to.upper() == "STRING":
+            msg_string = ""
+            for char in msg:
+                msg_string += char
+
+            return msg_string
+
+        elif convert_to.upper() == "LIST" or convert_to.upper() == "ARRAY":
+            msg_list = []
+            for char in msg:
+                msg_list.append(char)
+
+            return msg_list
+        
+    except AttributeError:
+        pass
+    raise Exception("Invalid input (not 'str', 'string', 'list' or 'array'") # raise error if input is invalid
+
+def FormatString(msg):
+    option = VerifyOption("Format encrypted string?","\n(e.g 'VFXGVTBUGOOG' -> 'VFXG VTBU GOOG')")
+    
+    if option == "N":
+        return msg # stop rest of function from running
+    else:
+        pass # continue function
+
+    while True:
+        try:
+            letters_per_group = int((input("How many letters per group? (e.g AAA BBB CCC = 3 per group \n>>> ").upper()).replace(" ",""))
+            break # will not run until the input above is valid
+        except ValueError:
+            print("Invalid input. Please enter an integer only.")
+
+    msg_list = StringListConverter(msg,"list")
+    
+    spaces_added = 0
+    for char_index in range(letters_per_group,len(msg_list),letters_per_group): #add spaces
+        msg_list.insert(char_index+spaces_added," ")
+        spaces_added += 1
+        
+
+    msg = StringListConverter(msg_list,"string")
+
+    return msg
+    
+
+def RandomiseLetterCasing(msg):
+    option = (input("Randomise letter casing? (Y/N) \n>>> ").upper()).replace(" ","")
+    while option != "Y" and option != "N":
+        option = (input("Invalid input. Randomise letter casing? (Y/N) \n>>> ").upper()).replace(" ","")
+
+    if option == "N":
+        return msg # stop rest of function from running
+    else:
+        pass # continue function
+
+    msg_list = StringListConverter(msg,"list")
+    
+    for char_index in range(0,len(msg_list)):
+        case = randint(0,1) # 0 = lower-case,  1 = upper-case
+        if case: # case == 1
+            msg_list[char_index] = msg_list[char_index].upper()
+        else:
+            msg_list[char_index] = msg_list[char_index].lower()
+
+    msg = StringListConverter(msg_list,"string")
+
+    return msg
 
 def ChangeKey():
     global key,letter_replace
 
-    option = (input("Change key? (Y/N) \n>>> ").upper()).replace(" ","")
-    while option != "Y" and option != "N":
-        option = input("Invalid input. Change key? (Y/N) \n>>> ").upper()
+    option = VerifyOption("Change key?")
 
     if option == "N":
         return "no key change" # stop rest of function from running
@@ -24,12 +141,15 @@ def ChangeKey():
     while (len(letter_replace_temp) != 3 or letter_replace_temp[1] != "," or
            letter_replace_temp[0] not in alphabet or letter_replace_temp[2] not in alphabet): # validation check
         print("\nInvalid input.")
-        letter_replace_temp = input("Replace all []'s with []'s (input using format x,y \n>>> ").upper()
+        letter_replace_temp = input("Replace all []'s with []'s (input using format x,y) \n>>> ").upper()
+        if letter_replace_temp == "":
+            letter_replace_temp = "J,I"
+        
 
     letter_replace = [letter_replace_temp[0],letter_replace_temp[2]]
 
     
-    temp_key = input("Enter new key. (e.g ATTACKATDAWN,ACBEFDGHIKLMNOPQRSTVWXUZY) \n>>> ").upper()
+    temp_key = (input("Enter new key. (e.g ATTACKATDAWN,ACBEFDGHIKLMNOPQRSTVWXUZY) \n>>> ").upper()).replace(" ","")
     new_key= ""
 
     if letter_replace[0] in temp_key: # remove character(s) from key if they are equal to letter_replace[0]
@@ -78,7 +198,11 @@ while True:
 
 
     if option == "E":
-        plain_text = input("Input plain text to be encrypted \nAll non-letter characters will be removed) \n>>>  ").lower()
+        plain_text = input("Input plain text to be encrypted \nAll non-letter characters will be removed) \n>>>  ")
+
+        plain_text_info = RememberLetterCasingAndFormat(plain_text)
+
+        plain_text = plain_text.lower() # make lower case
         
         plain_text = plain_text.replace(letter_replace[0],letter_replace[1]) # replace one character by another one, j -> i by default
         row_numbers = ""
@@ -95,10 +219,22 @@ while True:
         cipher_text = ""
         for i in range(0,len(output_numbers),2):
             cipher_text += key[int(output_numbers[i])-1][int(output_numbers[i+1])-1]
+
+        if plain_text_info == None:
+            cipher_text = RandomiseLetterCasing(cipher_text) # ask user if he/she wants to randomise the letter casing
+            cipher_text = FormatString(cipher_text) # ask user if he/she wants to format the string, e.g  FNPOLPARRD -> FNPO LPAR RD
+        else:
+            cipher_text = RememberLetterCasingAndFormat(cipher_text,"apply",plain_text_info)
+        
         print("Cipher text: " + cipher_text)
 
+
     else: # option == "D"
-        cipher_text = input("Input cipher text to be decrypted \nAll non-alphabetical characters will be removed) \n>>>  ").upper()
+        cipher_text = input("Input cipher text to be decrypted \nAll non-alphabetical characters will be removed) \n>>>  ")
+
+        cipher_text_info = RememberLetterCasingAndFormat(cipher_text)
+
+        cipher_text = cipher_text.upper() # make upper-case
 
         for char in cipher_text: #remove non-alphabetical characters
             if char not in alphabet:
@@ -134,13 +270,11 @@ while True:
         for letter_position in output_numbers:
             plain_text += key[int(letter_position[0])-1][int(letter_position[1])-1]
 
+        if cipher_text_info: # if cipher_text_info != None
+            plain_text = RememberLetterCasingAndFormat(plain_text, "apply",cipher_text_info)
+
         print("Plain text: " + plain_text)
         print("Note: some " + letter_replace[1] + "'s may be " + letter_replace[0] + "'s")
             
 
     print("\n\n\n---PROGRAM RESTART---\n\n\n")
-
-        
-        
-        
-                        
