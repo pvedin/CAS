@@ -101,9 +101,7 @@ def FormatString(msg):
     
 
 def RandomiseLetterCasing(msg):
-    option = (input("Randomise letter casing? (Y/N) \n>>> ").upper()).replace(" ","")
-    while option != "Y" and option != "N":
-        option = (input("Invalid input. Randomise letter casing? (Y/N) \n>>> ").upper()).replace(" ","")
+    option = VerifyOption("Randomise letter casing?")
 
     if option == "N":
         return msg # stop rest of function from running
