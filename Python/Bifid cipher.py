@@ -169,6 +169,7 @@ def ChangeKey():
 
     print(((("\nNew key:\n" + str(key[0]) + "\n" + str(key[1]) + "\n" + str(key[2]) + "\n" + str(key[3]) + "\n" + str(key[4]))
           .replace("[","").replace("]","")).replace("'","")).replace(",",""))
+    print("All {}'s are replaced by {}'s".format(letter_replace[0],letter_replace[1]))
 
 
 
