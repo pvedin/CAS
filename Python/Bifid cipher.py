@@ -203,7 +203,7 @@ while True:
 
         plain_text = plain_text.lower() # make lower case
         
-        plain_text = plain_text.replace(letter_replace[0],letter_replace[1]) # replace one character by another one, j -> i by default
+        plain_text = plain_text.replace(letter_replace[0].lower(),letter_replace[1].lower()) # replace one character by another one, j -> i by default
         row_numbers = ""
         column_numbers = ""
 
