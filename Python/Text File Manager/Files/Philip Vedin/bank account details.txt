@@ -1,0 +1,85 @@
+Although the passwords may be stored securely 
+in users.txt, that does not mean that this 
+program stores your text files securely.
+The fact that you are reading this right now
+proves this.
+
+Unless you somehow found out that the password
+for "Philip Vedin" is "SuperSecure_password",
+the only way you would be able to read this
+would be to directly open this file from
+the folder "Philip Vedin".
+
+So, does this mean that this program is 
+essentially useless? As it is right now, yes. 
+The main problem is that the actual folders
+are not encrypted. You may think, "Well, 
+just use password-locked .rar/.zip/.7z files 
+instead!".
+
+That may be simple to do manually; however,
+the program should be able to do it for you.
+Here is where the real problem is: making a
+program that can both create *and* access
+password-protected .rar or .zip files seems
+like it would be way too difficult for me
+at this point in time.
+
+While there may be third-party modules such 
+as "rarfile", most of these can only open
+password-protected .rar/.zip/.7z files, not
+*create* them. During this CAS activity
+I also do not want to make programs that
+rely on third-party modules, since it would
+make it much more difficult for others to
+run my programs, since they would have to
+manually download the modules as well.
+
+I found a possible solution at StackOverflow
+(http://stackoverflow.com/questions/17250/),
+that would allow me to create 
+password-encrypted .zip files without 
+relying on third-party modules (you do need 
+to have 7zip installed, though). However, 
+it feels too complicated for me at this 
+point, and so I have not decided to do
+anything about this glaring lack of security.
+
+
+Another possible solution could be to encrypt 
+the contents of each text file with e.g the 
+AES 256 cipher. However, this would once again 
+mean that I would have to rely on third-party
+modules, e.g PyCrypto, as I do not have the
+knowledge necessary to make my own
+implementation of the cipher.
+
+To further improve the security of the text
+files, perhaps I could encrypt the contents
+of the text files using the Bifid cipher,
+since I have already made a program that
+can encrypt/decrypt any string that has been
+given to it. Once again, though, that poses
+yet another problem: formatting.
+When the contents of a text file are 
+decrypted, they should then be displayed
+in a user-friendly manner, for example:
+"
+The quick brown 
+fox jumps over 
+the lazy dog
+"
+instead of
+"
+thequickbrownfoxjumpsoverthelazydog
+".
+Furthermore, my Bifid Cipher program can
+only encrypt letters, not numbers.
+This means that the information that
+really needs to be protected, e.g credit
+card numbers, would stay completely
+unencrypted. In fact, my program currently
+removes all non-alphabetic characters
+from the string it is given, so they would 
+not be stored to begin with.
+
