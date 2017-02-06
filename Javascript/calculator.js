@@ -1,4 +1,4 @@
-window.onload = function(){
+function runCalc(){
 	// get element with id "calculator" from html file and define container
 	var container = document.getElementById("calculator");
 	var div = document.createElement("div");
