@@ -1,12 +1,11 @@
-Download the contents in this folder, and place them in the same folder.
-
 How to run:
 
-Open "Text File Manager.exe"
 
-OR 
+- Download the contents in this folder, and place them in the same folder.
 
-Open "Text File Manager.py" (by double-clicking on it, not through IDLE)
+- Open "Text File Manager.exe", OR
+
+- Open "Text File Manager.py" (by double-clicking on it, not through IDLE)
 You can use IDLE to run the program, but one security feature will be disabled
 (when you input a password, the password will be displayed as you type it)
 
