@@ -82,7 +82,7 @@ def FormatString(msg):
 
     while True:
         try:
-            letters_per_group = int((input("How many letters per group? (e.g AAA BBB CCC = 3 per group \n>>> ").upper()).replace(" ",""))
+            letters_per_group = int((input("How many letters per group? (e.g AAA BBB CCC = 3 per group) \n>>> ").upper()).replace(" ",""))
             break # will not run until the input above is valid
         except ValueError:
             print("Invalid input. Please enter an integer only.")
