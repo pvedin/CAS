@@ -1,5 +1,3 @@
-// encryption wrong; fix. (look at rumkin)
-
 function runCTC(){ // create visual elements
 	// get element with id "columnarTranspositionCipher" from html file and define container
 	var container = document.getElementById("columnarTranspositionCipher");
