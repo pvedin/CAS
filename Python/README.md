@@ -1,4 +1,4 @@
-There are two ways to run the programs:
+There are two ways to run these programs:
 1. Run the .exe programs. This does not require you to download Python. However, you will not be able to see the source code.
 2. Open the .py(w) files. To open the .py(w) files, download Python (version 3+): https://www.python.org/downloads/
 
