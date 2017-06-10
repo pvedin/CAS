@@ -1,8 +1,0 @@
-The 1st, 2nd, 3rd and 6th lines
-of this file were added using
-"Text File Manager.py"'s Append mode,
-but not the 3rd and 4th lines, for they were
-changed using the Change line(s) mode!
-Pretty cool, eh?
-
-This is a new line!
